@@ -75,6 +75,7 @@ public abstract class RobotSpecItem extends RepositoryItem implements IRobotSpec
 		return (index >= 0) ? getFullClassName().substring(0, index) : null;
 	}
 
+
 	// same as package but with slash
 	public String getRelativePath() {
 		final int index = getFullClassName().lastIndexOf('.');
