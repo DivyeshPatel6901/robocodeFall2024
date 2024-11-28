@@ -25,6 +25,19 @@ public class JarExtractor {
 		}
 	}
 
+	// Helper method to validate and resolve paths
+	private static File validateAndResolve(File destDir, String entryName) throws IOException {
+		File file = new File(destDir, entryName);
+		String destDirPath = destDir.getCanonicalPath();
+		String filePath = file.getCanonicalPath();
+
+		// Ensure the resulting path is within the target directory
+		if (!filePath.startsWith(destDirPath + File.separator)) {
+			throw new IOException("Invalid entry detected: " + entryName);
+		}
+		return file;
+	}
+
 	public static void extractJar(URL url) {
 		File dest = FileUtil.getRobotsDir();
 		InputStream is = null;
@@ -42,9 +55,12 @@ public class JarExtractor {
 
 			while (entry != null) {
 				if (entry.isDirectory()) {
-					File dir = new File(dest, entry.getName());
+					File dir = validateAndResolve(dest, entry.getName()); // Validate directory path
 					// Use the helper method to create the parent directory
 					ensureParentDirectoryExists(dir);
+					if (!dir.exists() && !dir.mkdirs()) {
+						throw new IOException("Failed to create directory: " + dir);
+					}
 				} else {
 					extractFile(dest, jarIS, entry); // Process files using the existing extractFile method
 				}
@@ -60,7 +76,7 @@ public class JarExtractor {
 	}
 
 	public static void extractFile(File dest, JarInputStream jarIS, JarEntry entry) throws IOException {
-		File out = new File(dest, entry.getName());
+		File out = validateAndResolve(dest, entry.getName()); // Validate file path
 
 		// Use the helper method to create the parent directory
 		ensureParentDirectoryExists(out);
